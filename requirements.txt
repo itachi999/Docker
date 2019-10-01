@@ -1,0 +1,7 @@
+Flask
+SQLAlchemy 
+pandas
+flask_restful
+flask_jsonpify
+datetime
+

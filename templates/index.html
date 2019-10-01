@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>Cincinnati Weather</title>
+
+
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+
+    <script src="static/js/highcharts.js"> </script>
+    <script src="static/js/angular.js"></script>
+    <script src="static/js/exporting.js"></script>
+
+
+</head>
+
+<body ng-app="myApp">
+
+    <div ng-controller="HomeCtrl">
+    <span ng-model="name"></span>
+   <button class="btn btn-primary" ng-click="list_dates()"> LIST DATES</button>
+    <button class="btn btn-primary" ng-click="clear()"> CLEAR DATES</button>
+    <table>
+        <tr ng-repeat="date in dates">
+            <td> {{ '{{date.DATE }}' }}</td>
+        </tr>
+    </table>
+
+    <br><br>
+    <input type="text" ng-model="forecastDate"> </input>
+    <button class="btn btn-primary" data-toggle="modal" data-target="#myModal" ng-click="get_weather_forecast()"> GET FORECAST</button>
+
+    <label ng-model=dates></label>
+
+    <br><br>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal"
+            ng-click="get_weather_forecast_from_third_party()">Weather forecast chart
+    </button>
+
+    <div id="myModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Modal Header</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="container">Placeholder for chart</div>
+                    <div id="container1">Placeholder for chart</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+        </div>
+
+  <script type="text/javascript">
+    angular.module('myApp', [])
+            .controller('HomeCtrl', function($scope, $http) {
+        $scope.list_dates = function () {
+        console.log($scope.contact);
+        $http.get("/historical").success(function (response) {
+            console.log(response);
+            $scope.dates = response;
+        });
+        };
+        $scope.clear = function () {
+        $scope.dates = null;
+    };
+
+     $scope.get_weather_forecast = function () {
+        $http.get("/forecast/" + $scope.forecastDate).success(function (response) {
+            $scope.forecasted_report = response;
+            $scope.local_forecast_dates = [];
+            $scope.local_forecastedTMAX = [];
+            $scope.local_forecastedTMIN = [];
+            angular.forEach($scope.forecasted_report, function (value, key) {
+                $scope.local_forecast_dates.push(value.DATE);
+                $scope.local_forecastedTMAX.push(parseInt(value.TMAX));
+                $scope.local_forecastedTMIN.push(parseInt(value.TMIN));
+            });
+
+            Highcharts.chart('container', {
+                title:{
+                    text: "Weather-Forecast"
+                },
+                xAxis: {
+                    categories: $scope.local_forecast_dates
+                },
+                yAxis: {
+                    title: {
+                        text: 'Temperature (\xB0C)'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                series: [
+                    {
+                        name: 'TMAX',
+                        data: $scope.local_forecastedTMAX
+                    },
+                    {
+                        name: 'TMIN',
+                        data: $scope.local_forecastedTMIN
+                    }
+                ]
+            });
+
+
+        });
+    };
+
+    $scope.get_weather_forecast_from_third_party = function () {
+
+        $http.get("https://query.yahooapis.com/v1/public/yql?q=select+*+from+weather.forecast+where+woeid+in+(select+woeid+from+geo.places(1)+where+text%3d%22nome%2c+ak%22)&format=json").success(function (response) {
+            $scope.third_party_forecasted_report = response.query.results.channel.item.forecast;
+            $scope.forecast_dates = [];
+                $scope.forecastedTMAX = [];
+                $scope.forecastedTMIN = [];
+                angular.forEach($scope.third_party_forecasted_report, function (value, key) {
+                    $scope.forecast_dates.push(value.date);
+                    $scope.forecastedTMAX.push(parseInt(value.high));
+                    $scope.forecastedTMIN.push(parseInt(value.low));
+                });
+
+                Highcharts.chart('container1', {
+                        title:{
+                        text:"Yahoo forecast of Cincinnati"
+                        },
+                    xAxis: {
+                        categories: $scope.forecast_dates
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Temperature (\xB0C)'
+                        },
+                        plotLines: [{
+                            value: 0,
+                            width: 1,
+                            color: '#808080'
+                        }]
+                    },
+                    series: [
+                        {
+                            name: 'TMAX',
+                            data: $scope.forecastedTMAX
+                        },
+                        {
+                            name: 'TMIN',
+                            data: $scope.forecastedTMIN
+                        }
+                    ]
+                });
+
+            }
+        );
+    };
+        });
+</script>
+
+
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>
