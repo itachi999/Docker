@@ -1,4 +1,4 @@
-<b> Docker </b>
+<h><b> Docker </b></h>
 
 
 To run this project we need to first pull the docker container which can be done using this command (linux/ubuntu)
