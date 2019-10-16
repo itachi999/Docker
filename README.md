@@ -1,6 +1,6 @@
 # Docker
 
-I have dockerized the Homework assignment 3 in a container called <b>weather</b>
+#I have dockerized the Homework assignment 3 in a container called <b>weather</b>
 
 To run this project we need to first pull the docker container which can be done using this command (linux/ubuntu)
 
